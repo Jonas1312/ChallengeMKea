@@ -6,6 +6,8 @@
 
 The goal of this challenge is to build an image classifier to assist physicians in the screening and diagnosis of esophageal cancer. Such a tool would have a massive impact on patient management and patient lives.
 
+<img src="https://diagnosingbarretts.com/images/uploads/Progression-BE.001.png" alt="Illustration" width="700"/>
+
 ## Data description
 
 There are 11161 images acquired from 61 patients to be classified as:
@@ -35,6 +37,6 @@ We also know that if an image acquired from a patient is in the training set, th
 
 ## Metric
 
-$\text{Non weighted Multiclass accuracy} = \frac{\text{Number of images correctly classified}}{\text{Number of images in the test set}}$
+Non weighted Multiclass accuracy = (Number of images correctly classified) / (Number of images in the test set)
 
 ## Scores updates

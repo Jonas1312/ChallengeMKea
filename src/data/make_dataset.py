@@ -1,3 +1,4 @@
+# coding: utf-8
 def rearrange_test_set():
     """Merge part_1 and part2 test sets"""
     import os

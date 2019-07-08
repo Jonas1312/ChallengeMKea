@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from models.densenet import input_size, densenet121 as Model
+from architectures.densenet import input_size, densenet121 as Model
 from sampler import ImbalancedDatasetSampler
 from torchvision import datasets, transforms
 
@@ -183,6 +183,12 @@ def main():
     #     optimizer, T=20, eta_min=0, T_mult=1.0, eta_mult=0.3
     # )
 
+    # Train first and last layer for one epoch!!!
+
+    train_loss_history = list()
+    test_loss_history = list()
+    accuracy_history = list()
+
     for epoch in range(1, epochs + 1):
         print("################## EPOCH {}/{} ##################".format(epoch, epochs))
 
@@ -190,8 +196,16 @@ def main():
         for param_group in optimizer.param_groups:
             print("Current learning rate:", param_group["lr"])
 
-        train(model, device, train_loader, optimizer, epoch)
-        validate(model, device, test_loader, weights)
+        train_loss = train(model, device, train_loader, optimizer, epoch)
+        test_loss, acc = validate(model, device, test_loader, weights)
+
+        train_loss_history.append(train_loss)
+        test_loss_history.append(test_loss)
+        accuracy_history.append(acc)
+
+    # Save history
+    history = [train_loss_history, test_loss_history, accuracy_history]
+    np.save("history.npy", np.array(history))
 
 
 if __name__ == "__main__":

@@ -104,7 +104,7 @@ def main():
     # Create datasets
     train_indices = np.load("../../data/interim/train_indices.npy")
     test_indices = np.load("../../data/interim/test_indices.npy")
-    assert not (set(train_indices) & set(test_indices))
+    assert not set(train_indices) & set(test_indices)
 
     # Transforms
     train_set_transforms = transforms.Compose(

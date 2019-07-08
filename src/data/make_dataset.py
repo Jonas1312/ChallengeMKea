@@ -129,9 +129,9 @@ def generate_test_valid_indices():
         labels_count
     )
 
-    assert len(set(train_indices) & set(test_indices)) == 0
-    assert len(set(test_indices) & set(valid_indices)) == 0
-    assert len(set(train_indices) & set(valid_indices)) == 0
+    assert not set(train_indices) & set(test_indices)
+    assert not set(test_indices) & set(valid_indices)
+    assert not set(train_indices) & set(valid_indices)
 
     np.save(os.path.join(output_dir, "train_indices.npy"), train_indices)
     np.save(os.path.join(output_dir, "test_indices.npy"), test_indices)

@@ -96,7 +96,7 @@ def main():
     print(device)
 
     # Hyperparams
-    batch_size = 2
+    batch_size = 32
     epochs = 60
 
     # Create datasets
@@ -178,7 +178,8 @@ def main():
     model = Model(pretrained=True, num_classes=4).to(device)
     print(Model.__name__)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, weight_decay=1e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=5e-3, momentum=0.9, weight_decay=1e-4)
+    print("Optimizer: ", optimizer.__class__.__name__)
     # scheduler = CosineAnnealingRestartsLR(
     #     optimizer, T=20, eta_min=0, T_mult=1.0, eta_mult=0.3
     # )
@@ -203,9 +204,9 @@ def main():
         test_loss_history.append(test_loss)
         accuracy_history.append(acc)
 
-    # Save history
-    history = [train_loss_history, test_loss_history, accuracy_history]
-    np.save("history.npy", np.array(history))
+        # Save history at each epoch (overwrite previous history)
+        history = [train_loss_history, test_loss_history, accuracy_history]
+        np.save("history.npy", np.array(history))
 
 
 if __name__ == "__main__":

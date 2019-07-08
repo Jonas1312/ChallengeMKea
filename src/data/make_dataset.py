@@ -57,10 +57,12 @@ def remove_duplicates():
     from shutil import copy2
 
     input_dir = "../../data/raw/TrainingSetImagesDir/"
-    img_list = os.listdir(input_dir)
+    img_list = sorted(os.listdir(input_dir))
     assert len(img_list) == 9446
 
-    output_dir = "../../data/interim/TrainingSetImagesDirDuplicatesRemoved"
+    output_dir = "../../data/interim/TrainingSetImagesDirDuplicatesRemoved/"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     for patient_id in range(56):
         patient_images = [x for x in img_list if get_patient_nb(x) == patient_id]
@@ -86,6 +88,7 @@ def remove_duplicates():
 
         # Copy unique images
         images_to_copy = set(patient_images) - images_to_delete
+        print(f"moving {len(images_to_copy)} images")
         for img_name in images_to_copy:
             copy2(os.path.join(input_dir, img_name), output_dir)
 
@@ -112,7 +115,7 @@ def generate_test_valid_indices():
     y = np.array(y)
 
     X_left, X_test, y_left, y_test = train_test_split(
-        np.arange(y.shape[0]), y, stratify=y, test_size=0.1
+        np.arange(y.shape[0]), y, stratify=y, test_size=1 / 10
     )
     X_train, X_valid, y_train, y_valid = train_test_split(
         X_left, y_left, stratify=y_left, test_size=1 / 9

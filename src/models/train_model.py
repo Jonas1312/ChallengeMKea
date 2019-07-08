@@ -64,7 +64,9 @@ def validate(model, device, test_loader, weights):
             ).item()
             pred = output.max(dim=1, keepdim=True)[1]
             pred = pred.view_as(target)
-            correct[target[pred == target].cpu().numpy()] += 1
+            good_preds = target[pred == target].cpu().numpy()
+            classes, count = np.unique(good_preds, return_counts=True)
+            correct[classes] += count
 
     test_loss /= len(test_loader.dataset)
     nb_samples_per_class = 1 / weights.cpu().numpy()
@@ -102,6 +104,7 @@ def main():
     # Create datasets
     train_indices = np.load("../../data/interim/train_indices.npy")
     test_indices = np.load("../../data/interim/test_indices.npy")
+    assert not (set(train_indices) & set(test_indices))
 
     # Transforms
     train_set_transforms = transforms.Compose(
@@ -151,9 +154,9 @@ def main():
     train_loader = torch.utils.data.DataLoader(
         dataset=train_set,
         batch_size=batch_size,
-        shuffle=False,  # shuffle is handled by sampler
+        shuffle=False,  # shuffling is handled by sampler
         sampler=ImbalancedDatasetSampler(train_set, train_indices),
-        num_workers=4,
+        num_workers=2,
         pin_memory=True,
     )
 
@@ -161,7 +164,7 @@ def main():
         dataset=test_set,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=4,
+        num_workers=2,
         pin_memory=True,
     )
 
@@ -178,7 +181,10 @@ def main():
     model = Model(pretrained=True, num_classes=4).to(device)
     print(Model.__name__)
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=5e-3, momentum=0.9, weight_decay=1e-4)
+    # optimizer = torch.optim.SGD(
+    # model.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4
+    # )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
     print("Optimizer: ", optimizer.__class__.__name__)
     # scheduler = CosineAnnealingRestartsLR(
     #     optimizer, T=20, eta_min=0, T_mult=1.0, eta_mult=0.3

@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from architectures.densenet import input_size, densenet121 as Model
+from architectures.efficientnet import efficientnet as Model
 from sampler import ImbalancedDatasetSampler
 from torchvision import datasets, transforms
 
@@ -83,7 +83,7 @@ def validate(model, device, test_loader, weights):
     return test_loss, weighted_accuracy
 
 
-# def save_model(model, test_loss, test_accuracy):
+# def checkpoint(model, test_loss, test_accuracy):
 #     file_name = "2ch_{}_acc_{:.2f}_loss_{:.6f}.pth".format(
 #         Model.__name__, test_accuracy, test_loss
 #     )
@@ -100,6 +100,7 @@ def main():
     # Hyperparams
     batch_size = 32
     epochs = 60
+    input_size = (224,) * 2
 
     # Create datasets
     train_indices = np.load("../../data/interim/train_indices.npy")

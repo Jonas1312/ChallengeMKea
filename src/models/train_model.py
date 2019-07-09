@@ -85,17 +85,18 @@ def validate(model, device, test_loader, weights):
     return test_loss, weighted_accuracy
 
 
-def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size):
-    file_name = "{}_acc:{:.2f}_loss:{:.6f}_{}_ep:{}_sz{}.pth".format(
+def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size, weight_decay):
+    file_name = "{}_acc:{:.2f}_loss:{:.6f}_{}_ep:{}_sz:{}_wd{}:.pth".format(
         Model.__name__,
         test_acc,
         test_loss,
         optimizer.__class__.__name__,
         epoch,
         input_size[0],
+        weight_decay,
     )
     path = os.path.join("../../models/", file_name)
-    if test_acc > 93 and not os.path.isfile(path):
+    if test_acc > 95 and not os.path.isfile(path):
         torch.save(model.state_dict(), path)
         print("Saved: ", file_name)
 
@@ -108,6 +109,8 @@ def main():
     batch_size = 32
     epochs = 60
     input_size = (224,) * 2
+    weight_decay = 1e-5
+    print(f"Batch size: {batch_size}, input size: {input_size}")
 
     # Create datasets
     train_indices = np.load("../../data/interim/train_indices.npy")
@@ -164,7 +167,7 @@ def main():
         batch_size=batch_size,
         shuffle=False,  # shuffling is handled by sampler
         sampler=ImbalancedDatasetSampler(train_set, train_indices),
-        num_workers=2,
+        num_workers=4,
         pin_memory=True,
     )
 
@@ -172,7 +175,7 @@ def main():
         dataset=test_set,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=2,
+        num_workers=4,
         pin_memory=True,
     )
 
@@ -190,9 +193,11 @@ def main():
     print(Model.__name__)
 
     # optimizer = torch.optim.SGD(
-    # model.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4
+    # model.parameters(), lr=1e-2, momentum=0.9, weight_decay=weight_decay
     # )
-    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=3e-4, weight_decay=weight_decay
+    )
     print("Optimizer: ", optimizer.__class__.__name__)
     # scheduler = CosineAnnealingRestartsLR(
     #     optimizer, T=20, eta_min=0, T_mult=1.0, eta_mult=0.3

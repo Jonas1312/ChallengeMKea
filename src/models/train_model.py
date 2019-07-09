@@ -3,6 +3,8 @@
 Purpose: Train model
 """
 
+import os
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -83,14 +85,19 @@ def validate(model, device, test_loader, weights):
     return test_loss, weighted_accuracy
 
 
-# def checkpoint(model, test_loss, test_accuracy):
-#     file_name = "2ch_{}_acc_{:.2f}_loss_{:.6f}.pth".format(
-#         Model.__name__, test_accuracy, test_loss
-#     )
-#     path = os.path.join("saved_models", file_name)
-#     if test_accuracy > 99 and not os.path.isfile(path):
-#         torch.save(model.state_dict(), path)
-#         print("Saved: ", file_name)
+def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size):
+    file_name = "{}_acc:{:.2f}_loss:{:.6f}_{}_ep:{}_sz{}.pth".format(
+        Model.__name__,
+        test_acc,
+        test_loss,
+        optimizer.__class__.__name__,
+        epoch,
+        input_size[0],
+    )
+    path = os.path.join("../../models/", file_name)
+    if test_acc > 93 and not os.path.isfile(path):
+        torch.save(model.state_dict(), path)
+        print("Saved: ", file_name)
 
 
 def main():

@@ -1,8 +1,3 @@
-# coding: utf-8
-"""
-Purpose: Train model
-"""
-
 import os
 
 import numpy as np

@@ -1,5 +1,3 @@
-# coding:utf-8
-
 import torch
 import torch.utils.data
 import torchvision

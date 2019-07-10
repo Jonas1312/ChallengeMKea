@@ -3,13 +3,12 @@
   Purpose:  Test image augmentation
 """
 
-from collections import Counter
-
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
-from torchvision import datasets, transforms
 
 from sampler import ImbalancedDatasetSampler
+from torchvision import datasets, transforms
 
 
 def main():
@@ -47,20 +46,16 @@ def main():
         dataset=train_set,
         sampler=ImbalancedDatasetSampler(train_set),
         batch_size=batch_size,
-        num_workers=4,
+        num_workers=2,
     )
 
-    nb_0, nb_1, nb_2, nb_3 = (0,) * 4
+    count_labels = np.zeros(4, np.int)
     for data, target in train_loader:
         print(data.size(), target.size())
         print(target)
-        z = target.tolist()
-        z = Counter(z)
-        nb_0 += z[0]
-        nb_1 += z[1]
-        nb_2 += z[2]
-        nb_3 += z[3]
-        print(nb_0, nb_1, nb_2, nb_3)
+        classes, count = np.unique(target, return_counts=True)
+        count_labels[classes] += count
+        print(count_labels)
         plt.imshow(data[0, 0, :, :], cmap="gray")
         plt.show()
 

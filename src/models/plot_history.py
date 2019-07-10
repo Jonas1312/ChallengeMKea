@@ -4,8 +4,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def main():
-    history = np.load("history.npy")
+def lr_finder_history():
+    history = np.load("lr_finder.npy")
+    lr = history[0]
+    loss = history[1]
+
+    plt.plot(lr, loss)
+    plt.xscale("log")
+    plt.show()
+
+
+def model_history():
+    history = np.load("history.npy.txt")
     train_loss = history[0]
     test_loss = history[1]
     acc = history[2]
@@ -25,4 +35,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    model_history()

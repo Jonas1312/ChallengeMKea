@@ -14,7 +14,7 @@ from sampler import ImbalancedDatasetSampler
 from torchvision import datasets, transforms
 
 
-def train(model, device, train_loader, optimizer, epoch):
+def train(model, device, train_loader, optimizer, epoch, scheduler=None):
     model.train()
     nb_samples = 0
     epoch_loss = 0
@@ -32,6 +32,8 @@ def train(model, device, train_loader, optimizer, epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        if scheduler:
+            scheduler.step()
 
         print(
             "Train Epoch: {} [{}/{} ({:.0f}%)], Loss: {:.6f}".format(
@@ -86,7 +88,7 @@ def validate(model, device, test_loader, weights):
 
 
 def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size, weight_decay):
-    file_name = "{}_acc:{:.2f}_loss:{:.6f}_{}_ep:{}_sz:{}_wd{}:.pth".format(
+    file_name = "{}_acc={:.2f}_loss={:.5f}_{}_ep={}_sz={}_wd={}.pth".format(
         Model.__name__,
         test_acc,
         test_loss,
@@ -96,7 +98,7 @@ def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size, weight_
         weight_decay,
     )
     path = os.path.join("../../models/", file_name)
-    if test_acc > 95 and not os.path.isfile(path):
+    if test_acc > 98 and not os.path.isfile(path):
         torch.save(model.state_dict(), path)
         print("Saved: ", file_name)
 
@@ -107,10 +109,10 @@ def main():
 
     # Hyperparams
     batch_size = 32
-    epochs = 60
+    epochs = 15
     input_size = (224,) * 2
     weight_decay = 1e-5
-    print(f"Batch size: {batch_size}, input size: {input_size}")
+    print(f"Batch size: {batch_size}, input size: {input_size}, wd: {weight_decay}")
 
     # Create datasets
     train_indices = np.load("../../data/interim/train_indices.npy")
@@ -172,11 +174,7 @@ def main():
     )
 
     test_loader = torch.utils.data.DataLoader(
-        dataset=test_set,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=4,
-        pin_memory=True,
+        dataset=test_set, batch_size=128, shuffle=False, num_workers=4, pin_memory=True
     )
 
     # Distribution of classes in the test set
@@ -192,39 +190,50 @@ def main():
     model = Model(pretrained=True, num_classes=4).to(device)
     print(Model.__name__)
 
+    # Train first and last layer for one epoch
+    # model_params = [*model.parameters()]
     # optimizer = torch.optim.SGD(
-    # model.parameters(), lr=1e-2, momentum=0.9, weight_decay=weight_decay
+    #     [model_params[0], model_params[-1]],
+    #     lr=1e-2,
+    #     momentum=0.9,
+    #     weight_decay=weight_decay,
     # )
+    # train(model, device, train_loader, optimizer, -1)
+
     optimizer = torch.optim.AdamW(
-        model.parameters(), lr=3e-4, weight_decay=weight_decay
+        model.parameters(), lr=7e-4, weight_decay=weight_decay
     )
     print("Optimizer: ", optimizer.__class__.__name__)
-    # scheduler = CosineAnnealingRestartsLR(
-    #     optimizer, T=20, eta_min=0, T_mult=1.0, eta_mult=0.3
-    # )
 
-    # Train first and last layer for one epoch!!!
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [7, 10, 13], gamma=0.1)
 
     train_loss_history = list()
     test_loss_history = list()
-    accuracy_history = list()
+    acc_history = list()
 
     for epoch in range(1, epochs + 1):
         print("################## EPOCH {}/{} ##################".format(epoch, epochs))
 
-        # scheduler.step()
         for param_group in optimizer.param_groups:
             print("Current learning rate:", param_group["lr"])
 
         train_loss = train(model, device, train_loader, optimizer, epoch)
         test_loss, acc = validate(model, device, test_loader, weights)
 
+        scheduler.step()
+
+        # Save model
+        if epoch > 1 and (test_loss < min(test_loss_history) or acc > max(acc_history)):
+            checkpoint(
+                model, test_loss, acc, optimizer, epoch, input_size, weight_decay
+            )
+
         train_loss_history.append(train_loss)
         test_loss_history.append(test_loss)
-        accuracy_history.append(acc)
+        acc_history.append(acc)
 
         # Save history at each epoch (overwrite previous history)
-        history = [train_loss_history, test_loss_history, accuracy_history]
+        history = [train_loss_history, test_loss_history, acc_history]
         np.save("history.npy", np.array(history))
 
 

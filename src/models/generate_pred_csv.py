@@ -5,6 +5,7 @@ import torch
 from torch.nn import functional as F
 
 from architectures.densenet import densenet201
+from architectures.efficientnet import efficientnet
 from architectures.senet import se_resnet152, se_resnext101_32x4d
 from torchvision import datasets, transforms
 
@@ -28,16 +29,18 @@ class ImageFolderWithPaths(datasets.ImageFolder):
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    batch_size = 64
+    batch_size = 128
     with_probas = False
 
     weights_files = [
-        (densenet201, "densenet201_fold0_acc_99.06_loss_0.005640.pth"),
-        (densenet201, "densenet201_fold1_acc_99.60_loss_0.003211.pth"),
+        (
+            efficientnet,
+            "efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth",
+        )
     ]
 
     for _, weights_name in weights_files:
-        if not os.path.isfile(os.path.join("saved_models", weights_name)):
+        if not os.path.isfile(os.path.join("../../models/", weights_name)):
             raise FileNotFoundError(weights_name)
 
     for Model, weights_name in weights_files:

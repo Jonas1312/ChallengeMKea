@@ -3,7 +3,7 @@ def rearrange_test_set():
     import os
     from shutil import copy2
 
-    output_dir = "../../data/interim/TestSetImagesDir/"
+    output_dir = "../../data/interim/TestSetImagesDir/0/"
 
     input_dir = "../../data/raw/TestSetImagesDir/part_1/"
     for img_name in os.listdir(input_dir):

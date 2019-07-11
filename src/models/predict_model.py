@@ -10,15 +10,18 @@ import torch.nn.functional as F
 
 from architectures.densenet import densenet169, densenet201
 from architectures.senet import se_resnet152, se_resnext101_32x4d
+from architectures.efficientnet import efficientnet
 from torchvision import datasets, transforms
 
 
 def validate(model, device, test_loader, weights):
     model.eval()
+    nb_samples = 0
     test_loss = 0
     correct = np.zeros(4, dtype=np.int)
     with torch.no_grad():
-        for data, target in test_loader:
+        for batch_idx, (data, target) in enumerate(test_loader):
+            nb_samples += len(data)
             data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += F.cross_entropy(
@@ -30,6 +33,15 @@ def validate(model, device, test_loader, weights):
             classes, count = np.unique(good_preds, return_counts=True)
             correct[classes] += count
 
+            print(
+                "[{}/{} ({:.0f}%)]".format(
+                    nb_samples,
+                    len(test_loader.dataset),
+                    100.0 * (batch_idx + 1) / len(test_loader),
+                ),
+                end="\r",
+            )
+
     test_loss /= len(test_loader.dataset)
     nb_samples_per_class = 1 / weights.cpu().numpy()
     nb_samples_per_class = (
@@ -38,7 +50,7 @@ def validate(model, device, test_loader, weights):
     weighted_accuracy = 100 * np.sum(correct / nb_samples_per_class) / len(correct)
 
     print(
-        "Test set: Average loss: {:.6f}, Correct: {}/{}, Weighted accuracy: ({:.2f}%)".format(
+        "\nTest set: Average loss: {:.6f}, Correct: {}/{}, Weighted accuracy: ({:.2f}%)".format(
             test_loss, np.sum(correct), len(test_loader.dataset), weighted_accuracy
         )
     )
@@ -49,18 +61,18 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 
-    batch_size = 64
+    batch_size = 128
     valid_indices = np.load("../../data/interim/valid_indices.npy")
 
     weights_files = [
-        (densenet169, "densenet169_fold0_acc_99.20_loss_0.005439.pth"),
-        (densenet169, "densenet169_fold1_acc_99.41_loss_0.004389.pth"),
-        (densenet169, "densenet169_fold2_acc_99.25_loss_0.005233.pth"),
-        (se_resnext101_32x4d, "se_resnext101_32x4d_fold4_acc_98.87_loss_0.009070.pth"),
+        (
+            efficientnet,
+            "efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth",
+        )
     ]
 
     for _, weights_name in weights_files:
-        if not os.path.isfile(os.path.join("saved_models", weights_name)):
+        if not os.path.isfile(os.path.join("../../models/", weights_name)):
             raise FileNotFoundError(weights_name)
 
     for Model, weights_name in weights_files:

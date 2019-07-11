@@ -262,4 +262,6 @@ class EfficientNet(nn.Module):
 
 
 def efficientnet(pretrained, num_classes):
-    return EfficientNet.from_pretrained("efficientnet-b0", num_classes=num_classes)
+    if pretrained:
+        return EfficientNet.from_pretrained("efficientnet-b0", num_classes=num_classes)
+    return EfficientNet.from_name("efficientnet-b0")

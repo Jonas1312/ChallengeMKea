@@ -39,8 +39,12 @@ We also know that if an image acquired from a patient is in the training set, th
 
 Non weighted Multiclass accuracy = (Number of images correctly classified) / (Number of images in the test set)
 
+GOAL: 99%
+Baseline: 75% (simple CNN)
+
 ## Scores updates
 
-| Model         | Public LB score | Rank  | weight_name                                                     |
-| ------------- | --------------- | ----- | --------------------------------------------------------------- |
-| efficientnet0 | 0.89394         | 21/45 | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05 |
+| Date  | Model         | LB score | Rank  | Solution                                | weight_name                                                         |
+| ----- | ------------- | -------- | ----- | --------------------------------------- | ------------------------------------------------------------------- |
+| 06/07 | First commit  | x        | x     |                                         | x                                                                   |
+| 11/07 | efficientnet0 | 0.89394  | 21/45 | AdamW<br>MultiStepLR<br>simple data aug | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth |

@@ -40,3 +40,7 @@ We also know that if an image acquired from a patient is in the training set, th
 Non weighted Multiclass accuracy = (Number of images correctly classified) / (Number of images in the test set)
 
 ## Scores updates
+
+| Model         | Public LB score | Rank  | weight_name                                                     |
+| ------------- | --------------- | ----- | --------------------------------------------------------------- |
+| efficientnet0 | 0.89394         | 21/45 | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05 |

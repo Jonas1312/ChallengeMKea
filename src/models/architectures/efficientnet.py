@@ -141,7 +141,7 @@ class EfficientNet(nn.Module):
     def __init__(self, blocks_args=None, global_params=None):
         super().__init__()
         assert isinstance(blocks_args, list), "blocks_args should be a list"
-        assert len(blocks_args) > 0, "block args must be greater than 0"
+        assert blocks_args, "block args must be greater than 0"
         self._global_params = global_params
         self._blocks_args = blocks_args
 
@@ -219,8 +219,6 @@ class EfficientNet(nn.Module):
         return x
 
     def forward(self, inputs):
-        """ Calls extract_features to extract features, applies final linear layer, and returns logits. """
-
         # Convolution layers
         x = self.extract_features(inputs)
 
@@ -261,7 +259,17 @@ class EfficientNet(nn.Module):
             raise ValueError("model_name should be one of: " + ", ".join(valid_models))
 
 
-def efficientnet(pretrained, num_classes):
+def efficientnet(pretrained, num_classes, name="efficientnet-b0"):
     if pretrained:
-        return EfficientNet.from_pretrained("efficientnet-b0", num_classes=num_classes)
-    return EfficientNet.from_name("efficientnet-b0")
+        return EfficientNet.from_pretrained(name, num_classes=num_classes)
+    return EfficientNet.from_name(name)
+
+
+# EfficientNetB0 - (224, 224, 3)
+# EfficientNetB1 - (240, 240, 3)
+# EfficientNetB2 - (260, 260, 3)
+# EfficientNetB3 - (300, 300, 3)
+# EfficientNetB4 - (380, 380, 3)
+# EfficientNetB5 - (456, 456, 3)
+# EfficientNetB6 - (528, 528, 3)
+# EfficientNetB7 - (600, 600, 3)

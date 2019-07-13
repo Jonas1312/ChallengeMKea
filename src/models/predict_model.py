@@ -8,8 +8,6 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from architectures.densenet import densenet169, densenet201
-from architectures.senet import se_resnet152, se_resnext101_32x4d
 from architectures.efficientnet import efficientnet
 from torchvision import datasets, transforms
 

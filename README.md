@@ -39,7 +39,8 @@ We also know that if an image acquired from a patient is in the training set, th
 
 Non weighted Multiclass accuracy = (Number of images correctly classified) / (Number of images in the test set)
 
-GOAL: 99%
+**GOAL: 99%**
+
 Baseline: 75% (simple CNN)
 
 ## Scores updates

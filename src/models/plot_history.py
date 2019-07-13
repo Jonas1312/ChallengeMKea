@@ -13,7 +13,7 @@ def lr_finder_history():
 
 
 def model_history():
-    history = np.load("history.npy.txt")
+    history = np.load("history.npy")
     train_loss = history[0]
     test_loss = history[1]
     acc = history[2]

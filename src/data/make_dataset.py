@@ -113,10 +113,10 @@ def generate_test_valid_indices():
     )
     y = np.array(y)
 
-    X_left, X_test, y_left, y_test = train_test_split(
+    X_left, X_test, y_left, _ = train_test_split(
         np.arange(y.shape[0]), y, stratify=y, test_size=1 / 10
     )
-    X_train, X_valid, y_train, y_valid = train_test_split(
+    X_train, X_valid, _, _ = train_test_split(
         X_left, y_left, stratify=y_left, test_size=1 / 9
     )
 

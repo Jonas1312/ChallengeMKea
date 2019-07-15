@@ -5,11 +5,12 @@ import torch
 import torch.nn.functional as F
 
 from architectures.efficientnet import efficientnet as Model
+from mixup_utils import mixup_criterion, mixup_data
 from sampler import ImbalancedDatasetSampler
 from torchvision import datasets, transforms
 
 
-def train(model, device, train_loader, optimizer, epoch, scheduler=None):
+def train(model, device, train_loader, optimizer, epoch, scheduler=None, mixup=False):
     model.train()
     nb_samples = 0
     epoch_loss = 0
@@ -17,10 +18,17 @@ def train(model, device, train_loader, optimizer, epoch, scheduler=None):
     for batch_idx, (data, target) in enumerate(train_loader):
         nb_samples += len(data)
         data, target = data.to(device), target.to(device)
+        if mixup:
+            data, targets_a, targets_b, lam = mixup_data(data, target, device)
 
         output = model(data)
 
-        loss = F.cross_entropy(output, target, reduction="sum")
+        if mixup:
+            loss = mixup_criterion(
+                F.cross_entropy, output, targets_a, targets_b, lam, reduction="sum"
+            )
+        else:
+            loss = F.cross_entropy(output, target, reduction="sum")
         epoch_loss += loss.item()
         loss /= len(data)
 
@@ -82,8 +90,18 @@ def validate(model, device, test_loader, weights):
     return test_loss, weighted_accuracy
 
 
-def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size, weight_decay):
-    file_name = "{}_acc={:.2f}_loss={:.5f}_{}_ep={}_sz={}_wd={}.pth".format(
+def checkpoint(
+    model,
+    test_loss,
+    test_acc,
+    optimizer,
+    epoch,
+    input_size,
+    weight_decay,
+    mixup,
+    infos="",
+):
+    file_name = "{}_acc={:.2f}_loss={:.5f}_{}_ep={}_sz={}_wd={}_mp={}_{}.pth".format(
         Model.__name__,
         test_acc,
         test_loss,
@@ -91,9 +109,11 @@ def checkpoint(model, test_loss, test_acc, optimizer, epoch, input_size, weight_
         epoch,
         input_size[0],
         weight_decay,
+        mixup,
+        infos,
     )
     path = os.path.join("../../models/", file_name)
-    if test_acc > 98 and not os.path.isfile(path):
+    if test_acc > 99 and not os.path.isfile(path):
         torch.save(model.state_dict(), path)
         print("Saved: ", file_name)
 
@@ -104,14 +124,24 @@ def main():
 
     # Hyperparams
     batch_size = 32
-    epochs = 15
+    epochs = 30
     input_size = (224,) * 2
     weight_decay = 1e-5
-    print(f"Batch size: {batch_size}, input size: {input_size}, wd: {weight_decay}")
+    mixup = False
+    print(
+        f"Batch size: {batch_size}, input size: {input_size}, wd: {weight_decay}, mixup: {mixup}"
+    )
 
     # Create datasets
     train_indices = np.load("../../data/interim/train_indices.npy")
     test_indices = np.load("../../data/interim/test_indices.npy")
+    # valid_indices = np.load("../../data/interim/valid_indices.npy")
+
+    # Merge train and test
+    # train_indices = np.concatenate((train_indices, test_indices))
+    # test_indices = valid_indices
+
+    # Make sure there's no overlap
     assert not set(train_indices) & set(test_indices)
 
     # Transforms
@@ -123,7 +153,6 @@ def main():
                 degrees=180,
                 # translate=(0.05, 0.05),
                 # scale=(0.95, 1.05),
-                # shear=10,
                 resample=2,
                 fillcolor=0,
             ),
@@ -195,12 +224,14 @@ def main():
     # )
     # train(model, device, train_loader, optimizer, -1)
 
-    optimizer = torch.optim.AdamW(
-        model.parameters(), lr=7e-4, weight_decay=weight_decay
+    optimizer = torch.optim.SGD(
+        model.parameters(), lr=5e-4, momentum=0.9, weight_decay=weight_decay
     )
     print("Optimizer: ", optimizer.__class__.__name__)
 
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [7, 10, 13], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(
+        optimizer, milestones=[5], gamma=0.1
+    )
 
     train_loss_history = list()
     test_loss_history = list()
@@ -212,7 +243,7 @@ def main():
         for param_group in optimizer.param_groups:
             print("Current learning rate:", param_group["lr"])
 
-        train_loss = train(model, device, train_loader, optimizer, epoch)
+        train_loss = train(model, device, train_loader, optimizer, epoch, mixup=mixup)
         test_loss, acc = validate(model, device, test_loader, weights)
 
         scheduler.step()
@@ -220,7 +251,15 @@ def main():
         # Save model
         if epoch > 1 and (test_loss < min(test_loss_history) or acc > max(acc_history)):
             checkpoint(
-                model, test_loss, acc, optimizer, epoch, input_size, weight_decay
+                model,
+                test_loss,
+                acc,
+                optimizer,
+                epoch,
+                input_size,
+                weight_decay,
+                mixup,
+                infos="",
             )
 
         train_loss_history.append(train_loss)

@@ -45,7 +45,9 @@ Baseline: 75% (simple CNN)
 
 ## Scores updates
 
-| Date  | Model         | LB score | Rank  | Solution                                | weight_name                                                         |
-| ----- | ------------- | -------- | ----- | --------------------------------------- | ------------------------------------------------------------------- |
-| 06/07 | First commit  | x        | x     |                                         | x                                                                   |
-| 11/07 | efficientnet0 | 0.89394  | 21/45 | AdamW<br>MultiStepLR<br>simple data aug | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth |
+| Date  | Model                                                        | LB score | Rank  | Solution                                     | weight_name                                                         |
+| ----- | ------------------------------------------------------------ | -------- | ----- | -------------------------------------------- | ------------------------------------------------------------------- |
+| 06/07 | First commit                                                 | x        | x     |                                              | x                                                                   |
+| 11/07 | efficientnet0                                                | 0.894    | 21/45 | AdamW<br>MultiStepLR<br>simple data aug      | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth |
+| 13/07 | Ensemble (5):<br>DenseNet<br>SE-ResNext<br>InceptionResNetV2 | 0.918    | 15/45 | SGD<br>Cosine annealing<br>warm restarts<br> | 5best.csv                                                           |
+| 15/07 | Ensemble (3)                                                 | 0.944    | 8/45  | Pseudo-labeling<br>+ MixUp                   | ch_3best.csv                                                        |

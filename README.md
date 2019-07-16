@@ -45,9 +45,53 @@ Baseline: 75% (simple CNN)
 
 ## Scores updates
 
-| Date  | Model                                                        | LB score | Rank  | Solution                                     | weight_name                                                         |
-| ----- | ------------------------------------------------------------ | -------- | ----- | -------------------------------------------- | ------------------------------------------------------------------- |
-| 06/07 | First commit                                                 | x        | x     |                                              | x                                                                   |
-| 11/07 | efficientnet0                                                | 0.894    | 21/45 | AdamW<br>MultiStepLR<br>simple data aug      | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth |
-| 13/07 | Ensemble (5):<br>DenseNet<br>SE-ResNext<br>InceptionResNetV2 | 0.918    | 15/45 | SGD<br>Cosine annealing<br>warm restarts<br> | 5best.csv                                                           |
-| 15/07 | Ensemble (3)                                                 | 0.944    | 8/45  | Pseudo-labeling<br>+ MixUp                   | ch_3best.csv                                                        |
+| Date  | Model                                                                         | LB score | Rank  | Solution                                     | weight_name                                                         |
+| ----- | ----------------------------------------------------------------------------- | -------- | ----- | -------------------------------------------- | ------------------------------------------------------------------- |
+| 06/07 | First commit                                                                  | x        | x     |                                              | x                                                                   |
+| 11/07 | EfficientNet0                                                                 | 0.894    | 21/45 | AdamW<br>MultiStepLR<br>simple data aug      | efficientnet_acc=99.13_loss=0.00521_AdamW_ep=17_sz=224_wd=1e-05.pth |
+| 13/07 | Ensemble (5):<br>DenseNet<br>SE-ResNext<br>InceptionResNetV2<br>EfficientNet0 | 0.918    | 15/45 | SGD<br>Cosine annealing<br>warm restarts<br> | 5best.csv                                                           |
+| 15/07 | Ensemble (3)                                                                  | 0.944    | 8/45  | Pseudo-labeling<br>+ MixUp                   | ch_3best.csv                                                        |
+| 16/07 | Ensemble (5)                                                                  | 0.949    | 7/45  | Add 2 models                                 | 2ch_5best.csv                                                       |
+
+## Final solution
+
+- Data preprocessing:
+  - remove duplicates with dhash (9446 images -> 6973 images)
+  - split 6973 left images in train/test/valid (80%/10%/10%)
+  - No split by patient (I assumed it was not necessary since I had removed nearly identical images, maybe it's a bad idea...)
+
+- Class imbalance:
+  - over-sampling during training
+  - Weighted CE loss for testing
+
+- Training:
+  - simple data aug (flips, random rotations)
+  - resized to (224, 224), (299, 299) for InceptionResNetV2
+  - Pretrained weights from imagenet
+  - SGD
+  - LR scheduler : cosine annealing + warm restarts (60 epochs with 3 periods of 20 epochs)
+  - no regularization needed
+
+- Pseudo-labeling:
+  - on test set (1715 images)
+  - predict labels for each image
+  - if all (or more than X%) images that belong to the same patient have the same prectited class => add patient to train set
+
+- Ensemble:
+  - with probabilites from softmax
+
+What didn't work:
+
+- Focal loss
+- Adam/AdamW (converges fast but not as good as SGD)
+- Adabound/Amsbound
+
+Things I would have liked to try if GPU cloud providers weren't so expensive 😕💰:
+
+- Other EfficientNet models
+- TTA
+- For pseudo-labeling:
+  - https://arxiv.org/abs/1904.12848v2
+  - https://arxiv.org/abs/1905.02249v1
+- Hard mining
+- ridge regression : http://blog.kaggle.com/2017/10/17/planet-understanding-the-amazon-from-space-1st-place-winners-interview/

@@ -6,7 +6,7 @@
 
 The goal of this challenge is to build an image classifier to assist physicians in the screening and diagnosis of esophageal cancer. Such a tool would have a massive impact on patient management and patient lives.
 
-<img src="https://web.archive.org/web/20161023182542im_/http://diagnosingbarretts.com/images/site-design/cellvizio-in-use.jpg" alt="Illustration" width="800"/>
+<img src="https://live.staticflickr.com/7173/6538264803_121005ed76_b.jpg" alt="Illustration" width="800"/>
 
 ## Data description
 

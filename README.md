@@ -8,6 +8,8 @@ The goal of this challenge is to build an image classifier to assist physicians 
 
 <img src="./figures/68747470733a2f2f6c6976652e737461746963666c69636b722e636f6d2f373137332f363533383236343830335f313231303035656437365f622e6a7067.jpg" alt="Illustration" width="800"/>
 
+<img src="./figures/Capture.PNG" alt="Illustration" width="800"/>
+
 ## Data description
 
 There are 11161 images acquired from 61 patients to be classified as:
@@ -101,4 +103,4 @@ Baseline: 75% (simple CNN)
 
 Public Leaderboard             |  Final (private) Leaderboard
 :-------------------------:|:-------------------------:
-![](./figures/public_leaderboard.png)  |  ![](./figures/"Screenshot 2022-03-12 at 14-10-00 Challenge data.png")
+![](./figures/public_leaderboard.png)  |  ![](./figures/private_leaderboard.png)

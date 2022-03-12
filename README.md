@@ -6,7 +6,7 @@
 
 The goal of this challenge is to build an image classifier to assist physicians in the screening and diagnosis of esophageal cancer. Such a tool would have a massive impact on patient management and patient lives.
 
-<img src="https://live.staticflickr.com/7173/6538264803_121005ed76_b.jpg" alt="Illustration" width="800"/>
+<img src="./figures/68747470733a2f2f6c6976652e737461746963666c69636b722e636f6d2f373137332f363533383236343830335f313231303035656437365f622e6a7067.jpg" alt="Illustration" width="800"/>
 
 ## Data description
 
@@ -87,7 +87,7 @@ Baseline: 75% (simple CNN)
 - Adam/AdamW (converges fast but not as good as SGD)
 - Adabound/Amsbound
 
-## Things I would have liked to try if GPU cloud providers weren't so expensive 😕
+## Things I would have liked to try if GPU weren't so expensive 😕
 
 - Other EfficientNet models
 - TTA
@@ -96,3 +96,9 @@ Baseline: 75% (simple CNN)
   - https://arxiv.org/abs/1905.02249v1
 - Hard mining
 - ridge regression : http://blog.kaggle.com/2017/10/17/planet-understanding-the-amazon-from-space-1st-place-winners-interview/
+
+## Leaderboard
+
+Public Leaderboard             |  Final (private) Leaderboard
+:-------------------------:|:-------------------------:
+![](./figures/public_leaderboard.png)  |  ![](./figures/"Screenshot 2022-03-12 at 14-10-00 Challenge data.png")
